@@ -28,8 +28,24 @@ class InvoiceController extends Controller
     {
         $result = $this->invoiceService->processUpload($request->file('xml_file'));
 
+        $estado = data_get($result, 'estado');
+
+        if ($estado === 'Cancelado') {
+            return ApiResponse::error(
+                'El CFDI se encuentra cancelado ante el SAT y no puede ser procesado.',
+                422
+            );
+        }
+
+        $hasRepse = (bool) data_get($result, 'repse_validation.has_matches', false);
+
+        $message = $hasRepse
+            ? 'El CFDI contiene claves catalogadas como REPSE. Es probable que recibas un correo para cargar información adicional.'
+            : 'Factura procesada y analizada correctamente';
+
         return ApiResponse::success([
-            'cfdi_data' => $result
-        ], 'Factura procesada y analizada correctamente');
+            'cfdi_data' => $result,
+            'has_repse' => $hasRepse,
+        ], $message);
     }
 }
