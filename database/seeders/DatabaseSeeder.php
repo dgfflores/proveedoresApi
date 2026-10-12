@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RepseCatalogSeeder::class,
+            CompanySeeder::class,
+            ClasificationSeeder::class,
         ]);
     }
 }

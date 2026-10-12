@@ -16,7 +16,7 @@ class UploadInvoiceRequest extends FormRequest
     {
         return [
             'rfc_receptor'        => ['required', 'string', 'regex:/^[A-Z&Ñ]{3,4}\d{6}[A-V1-9][A-Z\d]{2}$/i'],
-            'razon_social'        => ['required'],
+            'clasification_id'        => ['required'],
             'email_acuse'         => ['required', 'email'],
             'email_acuse_confirm' => ['required', 'email', 'same:email_acuse'],
             'codigo_envio'        => ['nullable', 'string', 'max:10'],
@@ -37,7 +37,7 @@ class UploadInvoiceRequest extends FormRequest
     {
         return [
             'rfc_receptor' => 'RFC receptor',
-            'razon_social' => 'Razón social',
+            'clasification_id' => 'Clasificación',
             'email_acuse' => 'Email acuse',
             'email_acuse_confirm' => 'Confirmar email acuse',
             'codigo_envio' => 'Código de envío',

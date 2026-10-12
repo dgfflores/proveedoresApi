@@ -15,10 +15,9 @@ return new class extends Migration
         //AGREGAR COLUMNAS DE CLAVE Y DESCRIPCION PARA CATALOGOS
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Supplier::class)
-                ->constrained()
-                ->cascadeOnDelete();
-            $table->string('track_id', 20);
+            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('clasification_id')->constrained('clasifications')->cascadeOnDelete();
+            $table->string('track_id', 20)->unique();
             $table->string('code', 10);
             $table->string('serie', 25);
             $table->string('folio', 40);
@@ -27,9 +26,9 @@ return new class extends Migration
             $table->string('currency', 50);
             $table->string('exchange_rate', 50); //tipo cambio
             $table->decimal('total', 30, 6);
-            $table->string('uuid', 36);
+            $table->string('uuid', 36)->unique();
             $table->boolean('is_masive');
-            $table->boolean('status_sat');
+            $table->string('status_sat');
             $table->string('status');
             $table->date('date');
             $table->timestamps();

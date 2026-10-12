@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\DTOs\CfdiDataDto;
@@ -30,13 +31,19 @@ class SatStatusService
                 ])
                 ->timeout(30)
                 ->post('/invoices/status', [
-                    'comprobantes' => [[
-                        'uuid'        => $cfdi->uuid,
-                        'rfcEmisor'   => $cfdi->rfcEmisor,
-                        'rfcReceptor' => $cfdi->rfcReceptor,
-                        'total'       => $cfdi->total,
-                    ]]
+                    'uuid'        => $cfdi->uuid,
+                    'rfcEmisor'   => $cfdi->rfcEmisor,
+                    'rfcReceptor' => $cfdi->rfcReceptor,
+                    'total'       => $cfdi->total,
                 ]);
+            // ->post('/invoices/status', [
+            //     'comprobantes' => [[
+            //         'uuid'        => $cfdi->uuid,
+            //         'rfcEmisor'   => $cfdi->rfcEmisor,
+            //         'rfcReceptor' => $cfdi->rfcReceptor,
+            //         'total'       => $cfdi->total,
+            //     ]]
+            // ]);
 
             if ($response->successful()) {
                 return $response->json();
@@ -46,7 +53,6 @@ class SatStatusService
                 'status' => $response->status(),
                 'body'   => $response->body()
             ]);
-
         } catch (\Exception $e) {
             Log::error('Excepción al conectar con servicio SAT:', ['error' => $e->getMessage()]);
         }

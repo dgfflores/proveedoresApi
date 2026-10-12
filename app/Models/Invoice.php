@@ -9,6 +9,7 @@ class Invoice extends Model
     protected $table = 'invoices';
     protected $fillable = [
         'supplier_id',
+        'clasification_id',
         'track_id',
         'code',
         'serie',
@@ -30,9 +31,14 @@ class Invoice extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function clasification()
+    {
+        return $this->belongsTo(Clasification::class);
+    }
+
     protected $casts = [
         'is_masive' => 'boolean',
-        'status_sat' => 'boolean',
+        // 'status_sat' => 'boolean',
         'date' => 'date',
     ];
 }
