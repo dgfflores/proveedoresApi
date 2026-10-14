@@ -1,0 +1,103 @@
+:root {
+    --parker-gold: #FDB913;
+    --charcoal: #1C2B39;
+    --purpose-blue: #0082C4;
+    --deep-blue: #003468;
+    --clean-green: #7BBA3E;
+    --orange: #F79228;
+    --teal: #00A7B5;
+    --header-navy: #0A1826;
+    --text-muted: #6b7686;
+    --track-bg: #e5e9ee;
+    --border-color: #d1d5db;
+}
+
+/* Componente Tarjeta */
+.track-card {
+    border-radius: 5px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.track-card__header {
+    background-color: var(--header-navy);
+    color: var(--orange);
+    padding: 12px 10px;
+    text-align: center;
+}
+
+.track-card__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.track-card__body {
+    padding: 15px 10px;
+}
+
+.track-card__footer {
+    padding: 10px;
+}
+
+/* Componente Tabla de Datos */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+.data-table--half th {
+    width: 50%;
+}
+
+.data-table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding-bottom: 4px;
+}
+
+.data-table td {
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    word-break: break-all;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid var(--border-color);
+    margin: 12px 0;
+}
+
+/* Componente Código de Barras */
+.barcode {
+    text-align: center;
+    margin: 15px 0 5px 0;
+    padding: 10px;
+}
+
+.barcode__label {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 9px;
+    display: block;
+    margin-top: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.barcode__image {
+    height: 50px;
+    width: 28%;
+}
+
+.track-card__logo {
+    height: 40px;
+    width: 25%;
+}

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Clasification;
 use App\Models\Invoice;
 
+
 class InvoiceService
 {
     // public function __construct(
@@ -176,7 +177,7 @@ class InvoiceService
         ];
     }
 
-    public function createValidatedInvoice(CfdiDataDto $cfdiData, array $repseValidation, int $clasificationId, int $supplierId, array $requestData): Invoice
+    public function createValidatedInvoice(CfdiDataDto $cfdiData, array $repseValidation, int $clasificationId, int $supplierId, array $requestData): array
     {
         return DB::transaction(function () use ($cfdiData, $repseValidation, $clasificationId, $supplierId, $requestData) {
 
@@ -193,8 +194,9 @@ class InvoiceService
                 $clasification->serie,
                 str_pad($clasification->consecutive, 14, '0', STR_PAD_LEFT)
             );
-
+            
             $invoiceData = array_merge($requestData, [
+                'rfcEmisor'        => $cfdiData->rfcEmisor,
                 'clasification_id' => $clasification->id,
                 'supplier_id'      => $supplierId,
                 'track_id'         => $trackId,
@@ -213,7 +215,21 @@ class InvoiceService
                 'is_masive'        => false,
             ]);
 
-            return Invoice::create($invoiceData);
+            $invoice = Invoice::create($invoiceData)->load(['supplier' => function ($query) {
+                $query->select('id', 'rfc');
+            }, 'clasification' => function ($query) {
+                $query->select('id', DB::raw("CONCAT(location, ' - ', air) as division"));
+            }]);
+
+            $data = $invoice->toArray();
+
+            $data['supplier_rfc'] = $invoice->supplier->rfc ?? null;
+            $data['division'] = $invoice->clasification->division ?? null;
+
+            // 3. Eliminamos las llaves de los objetos anidados
+            unset($data['supplier'], $data['clasification']);
+            
+            return $data;
         });
     }
 }

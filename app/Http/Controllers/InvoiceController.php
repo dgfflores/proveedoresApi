@@ -11,6 +11,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use SimpleXMLElement;
 use Illuminate\Support\Facades\Http;
+use App\Traits\DateHelpers;
+use App\Services\DocumentStorageService;
+use App\Services\BarcodePdfService;
+use App\Services\CfdiParserService;
 
 //Verificar si viene el timbre fiscal digital
 //Verificar en cdfi_data -> sat_status -> data -> status-> estado
@@ -18,13 +22,19 @@ use Illuminate\Support\Facades\Http;
 // has_matches valor para verificar si alguna clave coincide con repse dentro de cfdi_data - repse_validation
 // agregar un log para saber exactamente que me esta devolviendo el sat
 // seria bueno igual validar que el rfc no exista en los uuids cargados es decir del registro de invoices
-// VALIDAR RFC RECEPTOR MATCH CON RFC COMPAÑIAS Y SI NO EXISTE REVOCARLO 
+// VALIDAR RFC RECEPTOR MATCH CON RFC COMPAÑIAS Y SI NO EXISTE REVOCARLO
+//validar que el rfc receptor sea el mismo que tiene la division
 
 
 class InvoiceController extends Controller
 {
+    use DateHelpers;
+    
     public function __construct(
-        private readonly InvoiceService $invoiceService
+        private readonly InvoiceService $invoiceService,
+        private readonly CfdiParserService $cfdiParserService,
+        private readonly DocumentStorageService $storageService,
+        private readonly BarcodePdfService $barcodePdfService
     ) {}
 
     // public function upload(UploadInvoiceRequest $request)
@@ -77,10 +87,10 @@ class InvoiceController extends Controller
     {
         // El servicio se encarga de parsear, validar el SAT, REPSE y, si todo es correcto, guardar la factura
         // NOTA: Asegúrate de pasar el clasification_id y supplier_id desde la petición o el contexto del usuario autenticado
-        $rfcReceptor = $request->validated('rfc_receptor');
+        $rfcEmisor = $request->validated('rfc_receptor');
         $clasificationId = $request->input('clasification_id');
         
-        $supplier = Supplier::where('rfc', $rfcReceptor)->first();
+        $supplier = Supplier::where('rfc', $rfcEmisor)->first();
 
         //CAMBIAR VALIDACION POR SI NO EXISTE REGISTRARLO 
         // if (!$supplier) {
@@ -89,9 +99,15 @@ class InvoiceController extends Controller
         //     ], 422);
         // }
 
+
+        // return response()->json([
+        //     'message' => 'El proveedor no tiene permitida la carga de facturas.'
+        // ], 422);
+
+
         if (!$supplier->is_active || !$supplier->load_invoice) {
             return response()->json([
-                'message' => 'El proveedor no no tiene permitida la carga de facturas.'
+                'message' => 'El proveedor no tiene permitida la carga de facturas.'
             ], 422);
         }
 
@@ -136,10 +152,39 @@ class InvoiceController extends Controller
             ? 'El CFDI contiene claves catalogadas como REPSE. Es probable que recibas un correo para cargar información adicional.'
             : 'Factura procesada y analizada correctamente';
 
+        $folderPath = "1" . $this->getYearMonthPath();
+        $invoice = $result['invoice'];
+        $trackId = $invoice['track_id'];
+
+        $cfdiData = $this->cfdiParserService->parse($request->file('xml_file'));
+        $rfcEmisor = $cfdiData->rfcEmisor;
+        $rfcReceptor = $cfdiData->rfcReceptor;
+
+        $data = [
+            'trackId' => $invoice['track_id'],
+            'uuid'    => $invoice['uuid'],
+            'total'   => $invoice['total'],
+            'serie'   => $invoice['serie'],
+            'folio'   => $invoice['folio'],
+            'rfcReceptor' => $rfcReceptor,
+            'rfcEmisor' => $rfcEmisor,
+            'division' => $invoice['division']
+        ];
+
+        $disk = 'local';
+        $pathXml = $this->storageService->storeXml($request->file('xml_file'), $folderPath, $trackId.'.xml', $disk);
+        $pathPdf = $this->storageService->storePdf($request->file('pdf_unico'), $folderPath, $trackId.'.pdf', $disk);
+        $pdfMultiplePaths = $this->storageService->storeMultiplePdfs($request->file('pdf_files', []), $folderPath, $trackId, $disk);
+
+        $barcodeSvg = $this->barcodePdfService->generatePdf($data, $folderPath, $trackId . 'acuse.pdf', 'local');
+
+
         return ApiResponse::success([
-            'cfdi_data' => $result,
+            // 'cfdi_data' => $result,
+            // 'track_id' => $trackId,
             'has_repse' => $hasRepse,
             'invoice'   => $result['invoice'], // Retornamos la factura creada con su track_id
         ], $message, 201);
+
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 class FolderStructureService
 {
     private Filesystem $storage;
-    
+
     public function __construct(Filesystem $storage)
     {
         $this->storage = $storage;
@@ -22,14 +22,12 @@ class FolderStructureService
 
         $listaAnios = [$anioActual, $anioSiguiente];
 
-        foreach ($listaAnios as $anio) {
-            $mesInicio = ($anio === $anioActual) ? $fechaActual->month : 1;
-
-            for ($m = $mesInicio; $m <= 12; $m++) {
-                $mesFormateado = str_pad($m, 2, '0', STR_PAD_LEFT);
-                $rutaCarpeta = "{$anio}/{$mesFormateado}";
-
-                if (!$this->storage->exists($rutaCarpeta)) {
+        foreach (range(1, 5) as $empresaId) {
+            foreach ($listaAnios as $anio) {
+                $mesInicio = ($anio === $anioActual) ? $fechaActual->month : 1;
+                for ($m = $mesInicio; $m <= 12; $m++) {
+                    $mesFormateado = str_pad($m, 2, '0', STR_PAD_LEFT);
+                    $rutaCarpeta = "{$empresaId}/{$anio}/{$mesFormateado}";
                     $this->storage->makeDirectory($rutaCarpeta);
                 }
             }
