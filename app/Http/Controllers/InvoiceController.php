@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LookupInvoiceRequest;
 use App\Http\Requests\UploadInvoiceRequest;
+use App\Http\Resources\InvoiceResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\RepseCatalog;
 use App\Models\Supplier;
+use App\Services\InvoiceLookupService;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -186,5 +189,18 @@ class InvoiceController extends Controller
             'invoice'   => $result['invoice'], // Retornamos la factura creada con su track_id
         ], $message, 201);
 
+    }
+
+    public function lookup(LookupInvoiceRequest $request, InvoiceLookupService $lookup)
+    {
+        $data = $request->validated();
+
+        $invoice = $lookup->find($data['rfc_receptor'], $data['uuid'] ?? null, $data['track_id'] ?? null);
+
+        if (!$invoice) {
+            return ApiResponse::error('No se encontró un CFDI con los datos proporcionados.', 404);
+        }
+
+        return ApiResponse::success(new InvoiceResource($invoice), 'CFDI localizado correctamente.');
     }
 }

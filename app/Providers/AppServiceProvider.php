@@ -14,6 +14,13 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(BarcodeGeneratorInterface::class, RealBarcodeGenerator::class);
+        $this->app->singleton(
+            \App\Contracts\CaptchaVerifier::class,
+            fn() => new \App\Services\GoogleRecaptchaVerifier(
+                (string) config('services.recaptcha.secret'),
+                (float) config('services.recaptcha.min_score'),
+            )
+        );
     }
 
     /**
