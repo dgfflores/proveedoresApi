@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LookupInvoiceRequest;
 use App\Http\Requests\UploadInvoiceRequest;
+use App\Http\Resources\InvoiceResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\RepseCatalog;
 use App\Models\Supplier;
+use App\Services\InvoiceLookupService;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -79,7 +82,7 @@ class InvoiceController extends Controller
         // NOTA: Asegúrate de pasar el clasification_id y supplier_id desde la petición o el contexto del usuario autenticado
         $rfcReceptor = $request->validated('rfc_receptor');
         $clasificationId = $request->input('clasification_id');
-        
+
         $supplier = Supplier::where('rfc', $rfcReceptor)->first();
 
         //CAMBIAR VALIDACION POR SI NO EXISTE REGISTRARLO 
@@ -141,5 +144,18 @@ class InvoiceController extends Controller
             'has_repse' => $hasRepse,
             'invoice'   => $result['invoice'], // Retornamos la factura creada con su track_id
         ], $message, 201);
+    }
+
+    public function lookup(LookupInvoiceRequest $request, InvoiceLookupService $lookup)
+    {
+        $data = $request->validated();
+
+        $invoice = $lookup->find($data['rfc_receptor'], $data['uuid'] ?? null, $data['track_id'] ?? null);
+
+        if (!$invoice) {
+            return ApiResponse::error('No se encontró un CFDI con los datos proporcionados.', 404);
+        }
+
+        return ApiResponse::success(new InvoiceResource($invoice), 'CFDI localizado correctamente.');
     }
 }

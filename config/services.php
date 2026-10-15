@@ -41,4 +41,9 @@ return [
         'password' => env('CORE_API_PASSWORD'),
         'contrato' => env('CORE_API_CONTRATO'),
     ],
+
+    'recaptcha' => [
+        'secret'    => env('RECAPTCHA_SECRET_KEY'),
+        'min_score' => env('RECAPTCHA_MIN_SCORE', 0.5),
+    ],
 ];

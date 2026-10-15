@@ -209,7 +209,7 @@ class InvoiceService
                 'exchange_rate'    => $cfdiData->tipoCambio,
                 'date'             => $cfdiData->fecha,
                 'status_sat'       => true,
-                'status'           => 'Validada',
+                'status'           => 'Vigente',
                 'is_masive'        => false,
             ]);
 
